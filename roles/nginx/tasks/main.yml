@@ -1,0 +1,150 @@
+---
+# tasks file for nginx
+
+
+
+
+# - name: Install nginx 
+#   become: true
+#   ansible.builtin.apt:
+#     name: nginx
+#     state: present
+#   notify:
+#     - start_nginx
+#     - enable_nginx
+
+
+# - name: Remove default nginx configuration
+#   become: true
+#   file:
+#     path: /etc/nginx/sites-enabled/default
+#     state: absent
+
+
+# - name: create server config file 
+#   become: true
+#   file:
+#     path: "/etc/nginx/sites-available/{{ item.domain_name }}"
+#     state: touch
+#   loop: "{{ websites }}"
+  
+
+# - name: copy template files 
+#   become: true
+#   template:
+#     src: nginx.conf.j2
+#     dest: "/etc/nginx/sites-available/{{ item.domain_name }}"
+#   loop: "{{ websites }}"
+
+
+# - name: create deployment directory in /var/www/'s folder
+#   become: true
+#   file:
+#     path: "/var/www/{{ item.domain_name }}"
+#     state: directory
+#     owner: www-data
+#     group: www-data
+#     recurse: true
+#   loop: "{{ websites }}"
+
+
+
+# - name: Vérifier si le dossier .git existe
+#   ansible.builtin.stat:
+#     path: "/var/www/{{ item.domain_name }}/.git"
+#   register: git_dossier_stat
+#   loop: "{{ websites }}"
+
+# - name: Ajouter chaque dossier à la liste safe.directory de Git
+#   become: true
+#   ansible.builtin.command:
+#     cmd: git config --global --add safe.directory "/var/www/{{ item.domain_name }}"
+#   loop: "{{ websites }}"
+#   ignore_errors: true
+
+# - name: Changer le propriétaire et le groupe du dossier de déploiement
+#   become: true
+#   ansible.builtin.file:
+#     path: "/var/www/{{ item.domain_name }}"
+#     owner: "{{ ansible_user }}"
+#     group: "{{ ansible_user }}"
+#     state: directory
+#   loop: "{{ websites }}"
+
+# - name: Clone websites si le dossier .git n'existe pas
+#   become: true
+#   git:
+#     repo: "{{ item.github_link }}"
+#     dest: "/var/www/{{ item.domain_name }}"
+#     force: yes
+#   loop: "{{ websites }}"
+#   when: not (git_dossier_stat.results[loop.index0].stat.exists | default(false))
+
+
+
+
+
+# - name: change deployment directory owner and group 
+#   become: true
+#   file:
+#     path: "/var/www/{{ item.domain_name }}"
+#     state: directory
+#     owner: www-data
+#     group: www-data
+#     recurse: true
+#   loop: "{{ websites }}"
+
+
+# - name: Enable website configuration
+#   become: true
+#   ansible.builtin.file:
+#     src: "/etc/nginx/sites-available/{{ item.domain_name }}"
+#     dest: "/etc/nginx/sites-enabled/{{ item.domain_name }}"
+#     state: link
+#   loop: "{{ websites }}"
+#   when: item.domain_name is defined
+
+
+# - name: reloaded Nginx
+#   become: true
+#   command: |
+#     sudo systemctl reload nginx
+
+
+
+
+
+
+- name: Install Certbot and Nginx plugin
+  become: true
+  ansible.builtin.package:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+
+
+#  Obtenir un certificat SSL avec Certbot
+- name: websites securisation
+  become: true
+  ansible.builtin.command: >
+     certbot --nginx -d {{ item.domain_name }} -d {{ item.domain_name }} --non-interactive --agree-tos --email propentatech@gmail.com --redirect
+  args:
+      creates: /etc/letsencrypt/live/{{ item.domain_name }}/fullchain.pem
+  loop: "{{ websites }}"
+
+
+
+# website securisation    
+- name: website securisation
+  become: true
+  command: certbot renew --dry-run
+
+
+
+
+- name: reloaded nginx
+  become: true
+  command: |
+    sudo systemctl reload nginx

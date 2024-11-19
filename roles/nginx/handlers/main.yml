@@ -1,0 +1,13 @@
+---
+# handlers file for nginx
+# sudo systemctl start nginx
+# sudo systemctl enable nginx
+- name: start_nginx 
+  systemd:
+    name: nginx
+    state: started
+
+- name: enable_nginx 
+  systemd:
+    name: nginx
+    state: enable

@@ -1,0 +1,18 @@
+---
+- name: configure automatic deployment of websites with nginx server 
+  hosts: all
+  gather_facts: no
+  pre_tasks:
+     
+    # - name: Update all packages to their latest version
+    #   become: true    
+    #   ansible.builtin.apt:
+    #     name: "*"
+    #     state: latest
+
+    # - name: Upgrade the OS (apt-get dist-upgrade)
+    #   become: true
+    #   ansible.builtin.apt:
+    #     upgrade: dist
+  roles:
+  - role: roles/nginx

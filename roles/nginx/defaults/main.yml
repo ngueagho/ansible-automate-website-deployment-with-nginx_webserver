@@ -1,0 +1,11 @@
+---
+# defaults file for nginx
+websites: 
+  - { domain_name: "simpletraining.store" , github_link: "https://github.com/ngueagho/portpholio.git" } 
+  # - { domain_name: "www.simpletraining.store" , github_link: "https://github.com/ngueagho/portpholio.git" }
+
+
+install_apps:
+  - nginx
+  - git
+  - certbot
